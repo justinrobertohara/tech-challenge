@@ -1,42 +1,106 @@
 <!doctype html>
 <html>
-	<head>
-		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 
-		<title>Thrilling Frontend Technical Challenge</title>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 
-		<link rel="icon" type="image/x-icon" href="/tech-challenge/favicon.ico" />
+	<title>Thrilling Frontend Technical Challenge</title>
 
-		<style>
-			body {
-				font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Helvetica Neue", Arial, sans-serif;
-			}
-		</style>
-	</head>
+	<link rel="icon" type="image/x-icon" href="/tech-challenge/favicon.ico" />
 
-	<body>
-		<h1>Thrilling Frontend Technical Challenge</h1>
+	<style>
+		body {
+			font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Helvetica Neue", Arial, sans-serif;
+		}
+	</style>
+</head>
 
-		<h2>Open your Developer Tools Console to view output.</h2>
+<body>
+	<h1>Thrilling Frontend Technical Challenge</h1>
 
-		<script>
-			var request = new XMLHttpRequest();
+	<h2>Open your Developer Tools Console to view output.</h2>
 
-			request.open('GET', 'https://api.nytimes.com/svc/topstories/v2/science.json?api-key=Gwxln5M3geWlhR6UE0TY1FUWKSG3wCil');
 
-			request.onload = function() {
-				if (this.status >= 200 && this.status < 400) {
-					console.log(JSON.parse(this.response));
-				} else {
-					console.error(this);
+	<!-- Create a button to search through the ajax request -->
+	<label>Search New York Times Articles:</label>
+	<input type="search" id="site-search" id="q" aria-label="Search through site content">
+	<button onclick="search()">Search</button>
+
+	<!-- new div to display html results -->
+	<div id="div1"></div>
+
+	<script>
+		var request = new XMLHttpRequest();
+
+		var data
+
+		function search() {
+			//save the input value *case insensitive
+			var input = document.getElementById('site-search').value.toLowerCase();
+
+			//figure for multiple string inputs
+			var arrayInput = input.split(' ')
+
+			//loop over the JSON saved in data from the ajax Search
+			for (let i = 0; i < data.results.length; i++) {
+
+				//create a searchableAttribute object *case insensitive
+				var searchableAttribute = {};
+				searchableAttribute.title = data.results[i].title.toLowerCase()
+				searchableAttribute.byline = data.results[i].byline.toLowerCase()
+				searchableAttribute.section = data.results[i].section.toLowerCase()
+				searchableAttribute.url = data.results[i].url.toLowerCase()
+
+				//dynamically checks true or false if all items of an array are in a target string
+				function contains(target, pattern) {
+					var value = 0;
+					pattern.forEach(function (word) {
+						value = value + target.includes(word)
+					})
+					return (value === 1)
 				}
-			};
 
-			request.onerror = function() {
+				// conditional statement to check to see
+				// if any of the searchable attributes include the input
+				if (contains(searchableAttribute.title, arrayInput) || contains(searchableAttribute.byline, arrayInput) ||
+					contains(searchableAttribute.section, arrayInput)) {
+
+					//add article link to the DOM - div1
+					var para = document.createElement("a");
+					para.setAttribute("href", searchableAttribute.url)
+					console.log(para)
+					var node = document.createTextNode(searchableAttribute.url);
+					para.appendChild(node);
+					var element = document.getElementById("div1");
+					element.appendChild(para);
+
+				}
+
+			}
+		}
+
+
+
+
+		request.open('GET',
+			'https://api.nytimes.com/svc/topstories/v2/science.json?api-key=Gwxln5M3geWlhR6UE0TY1FUWKSG3wCil');
+
+		request.onload = function () {
+			if (this.status >= 200 && this.status < 400) {
+				console.log(JSON.parse(this.response));
+				// store the results data from the onload request to NYTIMES
+				data = JSON.parse(this.response)
+			} else {
 				console.error(this);
-			};
+			}
+		};
 
-			request.send();
-		</script>
-	</body>
+		request.onerror = function () {
+			console.error(this);
+		};
+
+		request.send();
+	</script>
+</body>
+
 </html>
